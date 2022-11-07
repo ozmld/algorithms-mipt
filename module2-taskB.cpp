@@ -7,7 +7,7 @@ const long long kMod = 1e7 + 4321, kCoef1 = 123, kCoef2 = 45;
 const long long kMaxNumber = 5e7;
 
 // Selection sort to sort blocks
-void SelectionSort(long long dataset[], long long left, int right) {
+void SelectionSort(long long dataset[], int left, int right) {
   for (int i = left; i < right; ++i) {
     for (int j = i + 1; j < right; ++j) {
       if (dataset[i] > dataset[j]) {
@@ -17,8 +17,8 @@ void SelectionSort(long long dataset[], long long left, int right) {
   }
 }
 
-long long Partition(long long dataset[], long long left_index,
-                    long long right_index, long long pivot) {
+int Partition(long long dataset[], int left_index, int right_index,
+              long long pivot) {
   // Index for our current element
   int pointer = left_index;
   // Index for the place for last lower element
