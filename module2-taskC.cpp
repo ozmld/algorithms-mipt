@@ -8,6 +8,9 @@ const long long kMaxNumber = 1e6 + 1;
 class Heap {
  private:
   vector<long long> dataset_;
+  // We also will save number of operation (when element was added to the heap)
+  // and also will save element by operation number. To have accordance
+  // element <-> number of operation
   long long insert_operation_[kMaxNumber], element_heap_index_[kMaxNumber];
   long long heap_size_;
 
@@ -32,6 +35,8 @@ class Heap {
 void Heap::Exchange(long long i, long long j) {
   long long insert_operation_1 = insert_operation_[i],
             insert_operation_2 = insert_operation_[j];
+  // We exchanging i-element and j-element and all data
+  // which respond to them
   swap(dataset_[i], dataset_[j]);
   swap(insert_operation_[i], insert_operation_[j]);
   swap(element_heap_index_[insert_operation_1],
@@ -44,6 +49,7 @@ void Heap::SiftDown(long long i) {
     left_child_index = (i << 1) + 1;
     right_child_index = (i << 1) + 2;
     min_index = i;
+    // Usual sift down
     if (dataset_[left_child_index] < dataset_[min_index]) {
       min_index = left_child_index;
     }
@@ -60,6 +66,7 @@ void Heap::SiftDown(long long i) {
 }
 
 void Heap::SiftUp(long long i) {
+  // Usual sift up
   long long parent_index = ((i - 1) >> 1);
   while (i > 0 && dataset_[i] < dataset_[parent_index]) {
     Exchange(i, parent_index);
@@ -69,6 +76,7 @@ void Heap::SiftUp(long long i) {
 }
 
 void Heap::Insert(long long value, long long operation_number) {
+  // Inserting element and initializing all appropriate data
   heap_size_++;
   dataset_.push_back(value);
   insert_operation_[heap_size_ - 1] = operation_number;
@@ -87,6 +95,7 @@ void Heap::ExtractMin() {
 
 void Heap::DecreaseKey(long long operation_number, long long delta) {
   long long element_index = element_heap_index_[operation_number];
+  // Decreasing element and updating the heap
   dataset_[element_index] -= delta;
   SiftUp(element_index);
 }
