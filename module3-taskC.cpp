@@ -18,7 +18,7 @@ class SegmentTree {
   void Update(int v, int l, int r, int pos, int val);
 };
 
-inline void SegmentTree::Build(int data[], int v, int l, int r) {
+void SegmentTree::Build(int data[], int v, int l, int r) {
   if (r - l == 1) {
     tree_[v] = data[l];
     return;
@@ -29,7 +29,7 @@ inline void SegmentTree::Build(int data[], int v, int l, int r) {
   tree_[v] = std::max(tree_[2 * v + 1], tree_[2 * v + 2]);
 }
 
-inline void SegmentTree::Update(int v, int l, int r, int pos, int val) {
+void SegmentTree::Update(int v, int l, int r, int pos, int val) {
   if (r - l == 1) {
     tree_[v] = val;
     return;
@@ -43,8 +43,7 @@ inline void SegmentTree::Update(int v, int l, int r, int pos, int val) {
   tree_[v] = std::max(tree_[2 * v + 1], tree_[2 * v + 2]);
 }
 
-inline int SegmentTree::FindRightNotLess(int v, int l, int r, int pos,
-                                         int val) {
+int SegmentTree::FindRightNotLess(int v, int l, int r, int pos, int val) {
   if (tree_[v] < val) {
     return -1;
   }
