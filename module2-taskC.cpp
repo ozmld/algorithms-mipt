@@ -22,6 +22,9 @@ class Heap {
   // and also will save element by operation number. To have accordance
   // element <-> number of operation
   long long heap_size_;
+  void Exchange(int i, int j);
+  void SiftDown(int i);
+  void SiftUp(int i);
 
  public:
   Heap() {
@@ -30,9 +33,6 @@ class Heap {
       heap_[i] = Node();
     }
   }
-  void Exchange(int i, int j);
-  void SiftDown(int i);
-  void SiftUp(int i);
   void Insert(long long value, int operation_number);
   long long GetMin() const;
   void ExtractMin();
