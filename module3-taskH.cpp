@@ -7,16 +7,16 @@ const int kMaxLevel = 17;
 class SparseTable {
  private:
   long long sparse_table_[kMaxLevel][kMaxNumber][2];
-  int Log(int n);
+  int Log(int n) const;
   std::pair<long long, long long> FindTwoMins(long long level, long long i);
 
  public:
-  void SparseTableInitialization(int number, std::vector<long long> data);
-  long long GetMin(int l, int r);
-  long long GetAnswer(int l, int r);
+  SparseTable(int number, std::vector<long long> data);
+  long long GetMin(int l, int r) const;
+  long long GetSecondMin(int l, int r) const;
 };
 
-int SparseTable::Log(int n) {
+int SparseTable::Log(int n) const {
   if (n == 1) {
     return 0;
   }
@@ -43,8 +43,7 @@ std::pair<long long, long long> SparseTable::FindTwoMins(long long level,
   return std::make_pair(c[0], c[1]);
 }
 
-void SparseTable::SparseTableInitialization(int number,
-                                            std::vector<long long> data) {
+SparseTable::SparseTable(int number, std::vector<long long> data) {
   // Initialization sparse table structure.
   for (int i = 0; i < number; ++i) {
     sparse_table_[0][i][0] = data[i];
@@ -64,14 +63,14 @@ void SparseTable::SparseTableInitialization(int number,
   }
 }
 
-long long SparseTable::GetMin(int l, int r) {
+long long SparseTable::GetMin(int l, int r) const {
   int level = Log(r - l + 1);
   // Minimum on [l, r] segment is evaluated in SparseTable structure by
   // following expression.
   return std::min(sparse_table_[level][l][0],
                   sparse_table_[level][r - (1 << level) + 1][0]);
 }
-long long SparseTable::GetAnswer(int l, int r) {
+long long SparseTable::GetSecondMin(int l, int r) const {
   int level = Log(r - l + 1);
   // Minimum on [l, r] segment is evaluated in SparseTable structure by
   // following expression.
@@ -97,11 +96,10 @@ int main() {
     std::cin >> x;
     data.push_back(x);
   }
-  SparseTable sparse_table;
-  sparse_table.SparseTableInitialization(n, data);
+  SparseTable sparse_table = SparseTable(n, data);
   for (int i = 0; i < m; ++i) {
     int l, r;
     std::cin >> l >> r;
-    std::cout << sparse_table.GetAnswer(l - 1, r - 1) << "\n";
+    std::cout << sparse_table.GetSecondMin(l - 1, r - 1) << "\n";
   }
 }
