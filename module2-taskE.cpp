@@ -12,7 +12,13 @@ class MinMaxHeap {
     heap_size = 0;
     dataset = {};
   }
+  long long CheckChildsMin(long long i, long long mi);
+  long long CheckGrandChildsMin(long long i, long long mi, long long& parent,
+                                long long& is_grandchild);
   void SiftDownMin(long long i);
+  long long CheckChildsMax(long long i, long long mi);
+  long long CheckGrandChildsMax(long long i, long long mi, long long& parent,
+                                long long& is_grandchild);
   void SiftDownMax(long long i);
   void SiftDown(long long i);
   void SiftUpMin(long long i);
@@ -29,50 +35,44 @@ class MinMaxHeap {
 
 long long NodeLevel(long long i) { return int(log2(i + 1)); }
 
+long long MinMaxHeap::CheckChildsMin(long long i, long long mi) {
+  long long left_child_index = (i << 1) + 1;
+  long long right_child_index = (i << 1) + 2;
+  long long min_index = mi;
+  if (left_child_index < heap_size &&
+      dataset[left_child_index] < dataset[min_index]) {
+    min_index = left_child_index;
+  }
+  if (right_child_index < heap_size &&
+      dataset[right_child_index] < dataset[min_index]) {
+    min_index = right_child_index;
+  }
+  return min_index;
+}
+
+long long MinMaxHeap::CheckGrandChildsMin(long long i, long long mi,
+                                          long long& parent,
+                                          long long& is_grandchild) {
+  long long min_index = mi;
+  if (min_index != CheckChildsMin((i << 1) + 1, min_index)) {
+    min_index = CheckChildsMin((i << 1) + 1, min_index);
+    is_grandchild = 1;
+    parent = (i << 1) + 1;
+  }
+  if (min_index != CheckChildsMin((i << 1) + 2, min_index)) {
+    min_index = CheckChildsMin((i << 1) + 2, min_index);
+    is_grandchild = 1;
+    parent = (i << 1) + 2;
+  }
+  return min_index;
+}
+
 void MinMaxHeap::SiftDownMin(long long i) {
-  long long left_child_index, right_child_index, min_index;
-  long long left_left_grandchild_index, left_right_grandchild_index;
-  long long right_left_grandchild_index, right_right_grandchild_index;
   long long is_grandchild = 0, parent;
   while ((i << 1) + 1 < heap_size) {
-    left_child_index = (i << 1) + 1;
-    right_child_index = (i << 1) + 2;
-    left_left_grandchild_index = (left_child_index << 1) + 1;
-    left_right_grandchild_index = (left_child_index << 1) + 2;
-    right_left_grandchild_index = (right_child_index << 1) + 1;
-    right_right_grandchild_index = (right_child_index << 1) + 2;
-    min_index = i;
-    if (dataset[left_child_index] < dataset[min_index]) {
-      min_index = left_child_index;
-    }
-    if (right_child_index < heap_size &&
-        dataset[right_child_index] < dataset[min_index]) {
-      min_index = right_child_index;
-    }
-    if (left_left_grandchild_index < heap_size &&
-        dataset[left_left_grandchild_index] < dataset[min_index]) {
-      min_index = left_left_grandchild_index;
-      is_grandchild = 1;
-      parent = left_child_index;
-    }
-    if (left_right_grandchild_index < heap_size &&
-        dataset[left_right_grandchild_index] < dataset[min_index]) {
-      min_index = left_right_grandchild_index;
-      is_grandchild = 1;
-      parent = left_child_index;
-    }
-    if (right_left_grandchild_index < heap_size &&
-        dataset[right_left_grandchild_index] < dataset[min_index]) {
-      min_index = right_left_grandchild_index;
-      is_grandchild = 1;
-      parent = right_child_index;
-    }
-    if (right_right_grandchild_index < heap_size &&
-        dataset[right_right_grandchild_index] < dataset[min_index]) {
-      min_index = right_right_grandchild_index;
-      is_grandchild = 1;
-      parent = right_child_index;
-    }
+    long long min_index = i;
+    min_index = CheckChildsMin(i, min_index);
+    min_index = CheckGrandChildsMin(i, min_index, parent, is_grandchild);
     if (dataset[min_index] < dataset[i]) {
       swap(dataset[min_index], dataset[i]);
       if (is_grandchild != 0) {
@@ -87,53 +87,47 @@ void MinMaxHeap::SiftDownMin(long long i) {
   }
 }
 
+long long MinMaxHeap::CheckChildsMax(long long i, long long mi) {
+  long long max_index = mi;
+  long long left_child_index = (i << 1) + 1;
+  long long right_child_index = (i << 1) + 2;
+  if (left_child_index < heap_size &&
+      dataset[left_child_index] > dataset[max_index]) {
+    max_index = left_child_index;
+  }
+  if (right_child_index < heap_size &&
+      dataset[right_child_index] > dataset[max_index]) {
+    max_index = right_child_index;
+  }
+  return max_index;
+}
+
+long long MinMaxHeap::CheckGrandChildsMax(long long i, long long mi,
+                                          long long& parent,
+                                          long long& is_grandchild) {
+  long long max_index = mi;
+  if (max_index != CheckChildsMax((i << 1) + 1, max_index)) {
+    max_index = CheckChildsMax((i << 1) + 1, max_index);
+    is_grandchild = 1;
+    parent = (i << 1) + 1;
+  }
+  if (max_index != CheckChildsMax((i << 1) + 2, max_index)) {
+    max_index = CheckChildsMax((i << 1) + 2, max_index);
+    is_grandchild = 1;
+    parent = (i << 1) + 2;
+  }
+  return max_index;
+}
+
 void MinMaxHeap::SiftDownMax(long long i) {
-  long long left_child_index, right_child_index, max_index;
-  long long left_left_grandchild_index, left_right_grandchild_index;
-  long long right_left_grandchild_index, right_right_grandchild_index;
   long long is_grandchild = 0, parent;
   while (2 * i + 1 < heap_size) {
-    left_child_index = (i << 1) + 1;
-    right_child_index = (i << 1) + 2;
-    left_left_grandchild_index = (left_child_index << 1) + 1;
-    left_right_grandchild_index = (left_child_index << 1) + 2;
-    right_left_grandchild_index = (right_child_index << 1) + 1;
-    right_right_grandchild_index = (right_child_index << 1) + 2;
-    max_index = i;
-    if (dataset[left_child_index] < dataset[max_index]) {
-      max_index = left_child_index;
+    long long max_index = i;
+    if (dataset[(i << 1) + 1] < dataset[max_index]) {
+      max_index = (i << 1) + 1;
     }
-    if (dataset[left_child_index] > dataset[max_index]) {
-      max_index = left_child_index;
-    }
-    if (right_child_index < heap_size &&
-        dataset[right_child_index] > dataset[max_index]) {
-      max_index = right_child_index;
-    }
-    if (left_left_grandchild_index < heap_size &&
-        dataset[left_left_grandchild_index] > dataset[max_index]) {
-      max_index = left_left_grandchild_index;
-      is_grandchild = 1;
-      parent = left_child_index;
-    }
-    if (left_right_grandchild_index < heap_size &&
-        dataset[left_right_grandchild_index] > dataset[max_index]) {
-      max_index = left_right_grandchild_index;
-      is_grandchild = 1;
-      parent = left_child_index;
-    }
-    if (right_left_grandchild_index < heap_size &&
-        dataset[right_left_grandchild_index] > dataset[max_index]) {
-      max_index = right_left_grandchild_index;
-      is_grandchild = 1;
-      parent = right_child_index;
-    }
-    if (right_right_grandchild_index < heap_size &&
-        dataset[right_right_grandchild_index] > dataset[max_index]) {
-      max_index = right_right_grandchild_index;
-      is_grandchild = 1;
-      parent = right_child_index;
-    }
+    max_index = CheckChildsMax(i, max_index);
+    max_index = CheckGrandChildsMax(i, max_index, parent, is_grandchild);
     if (dataset[max_index] > dataset[i]) {
       swap(dataset[max_index], dataset[i]);
       if (is_grandchild != 0) {
