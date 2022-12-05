@@ -1,318 +1,142 @@
-#include <cmath>
 #include <iostream>
-#include <vector>
+#include <string>
 
-using namespace std;
+const int kMaxNumber = 2 * 1e5, kMaxLevel = 30;
 
-class MinMaxHeap {
- public:
-  vector<long long> dataset;
-  long long heap_size;
-  MinMaxHeap() {
-    heap_size = 0;
-    dataset = {};
+void SparseTableInitialization(int number, int (&dataset)[kMaxNumber],
+                               int (&sparse_table)[kMaxLevel][kMaxNumber]) {
+  // Initialization sparse table structure.
+  for (int i = 0; i < number; ++i) {
+    sparse_table[0][i] = dataset[i];
   }
-  long long CheckChildsMin(long long i, long long mi);
-  long long CheckGrandChildsMin(long long i, long long mi, long long& parent,
-                                long long& is_grandchild);
-  void SiftDownMin(long long i);
-  long long CheckChildsMax(long long i, long long mi);
-  long long CheckGrandChildsMax(long long i, long long mi, long long& parent,
-                                long long& is_grandchild);
-  void SiftDownMax(long long i);
-  void SiftDown(long long i);
-  void SiftUpMin(long long i);
-  void SiftUpMax(long long i);
-  void SiftUp(long long i);
-  void Insert(long long value);
-  void GetMin();
-  void ExtractMin();
-  void GetMax();
-  void ExtractMax();
-  void Size();
-  void Clear();
-};
-
-long long NodeLevel(long long i) { return int(log2(i + 1)); }
-
-long long MinMaxHeap::CheckChildsMin(long long i, long long mi) {
-  long long left_child_index = (i << 1) + 1;
-  long long right_child_index = (i << 1) + 2;
-  long long min_index = mi;
-  if (left_child_index < heap_size &&
-      dataset[left_child_index] < dataset[min_index]) {
-    min_index = left_child_index;
-  }
-  if (right_child_index < heap_size &&
-      dataset[right_child_index] < dataset[min_index]) {
-    min_index = right_child_index;
-  }
-  return min_index;
-}
-
-long long MinMaxHeap::CheckGrandChildsMin(long long i, long long mi,
-                                          long long& parent,
-                                          long long& is_grandchild) {
-  long long min_index = mi;
-  if (min_index != CheckChildsMin((i << 1) + 1, min_index)) {
-    min_index = CheckChildsMin((i << 1) + 1, min_index);
-    is_grandchild = 1;
-    parent = (i << 1) + 1;
-  }
-  if (min_index != CheckChildsMin((i << 1) + 2, min_index)) {
-    min_index = CheckChildsMin((i << 1) + 2, min_index);
-    is_grandchild = 1;
-    parent = (i << 1) + 2;
-  }
-  return min_index;
-}
-
-void MinMaxHeap::SiftDownMin(long long i) {
-  long long is_grandchild = 0, parent;
-  while ((i << 1) + 1 < heap_size) {
-    long long min_index = i;
-    min_index = CheckChildsMin(i, min_index);
-    min_index = CheckGrandChildsMin(i, min_index, parent, is_grandchild);
-    if (dataset[min_index] < dataset[i]) {
-      swap(dataset[min_index], dataset[i]);
-      if (is_grandchild != 0) {
-        if (dataset[min_index] > dataset[parent]) {
-          swap(dataset[min_index], dataset[parent]);
-        }
-      }
-    } else {
-      break;
+  for (int level = 1; level < kMaxLevel; ++level) {
+    for (int i = 0; i < number - (1 << level) + 1; ++i) {
+      sparse_table[level][i] =
+          std::min(sparse_table[level - 1][i],
+                   sparse_table[level - 1][i + (1 << (level - 1))]);
     }
-    i = min_index;
   }
 }
 
-long long MinMaxHeap::CheckChildsMax(long long i, long long mi) {
-  long long max_index = mi;
-  long long left_child_index = (i << 1) + 1;
-  long long right_child_index = (i << 1) + 2;
-  if (left_child_index < heap_size &&
-      dataset[left_child_index] > dataset[max_index]) {
-    max_index = left_child_index;
+int Log(int x) {
+  if (x == 1) {
+    return 0;
   }
-  if (right_child_index < heap_size &&
-      dataset[right_child_index] > dataset[max_index]) {
-    max_index = right_child_index;
-  }
-  return max_index;
+  return Log(x / 2) + 1;
 }
 
-long long MinMaxHeap::CheckGrandChildsMax(long long i, long long mi,
-                                          long long& parent,
-                                          long long& is_grandchild) {
-  long long max_index = mi;
-  if (max_index != CheckChildsMax((i << 1) + 1, max_index)) {
-    max_index = CheckChildsMax((i << 1) + 1, max_index);
-    is_grandchild = 1;
-    parent = (i << 1) + 1;
-  }
-  if (max_index != CheckChildsMax((i << 1) + 2, max_index)) {
-    max_index = CheckChildsMax((i << 1) + 2, max_index);
-    is_grandchild = 1;
-    parent = (i << 1) + 2;
-  }
-  return max_index;
+int Minimum(int l, int r, int (&sparse_table)[kMaxLevel][kMaxNumber]) {
+  int level = Log(r - l + 1);
+  // Minimum on [l, r] segment is evaluated in SparseTable structure by
+  // following expression.
+  return std::min(sparse_table[level][l],
+                  sparse_table[level][r - (1 << level) + 1]);
 }
 
-void MinMaxHeap::SiftDownMax(long long i) {
-  long long is_grandchild = 0, parent;
-  while (2 * i + 1 < heap_size) {
-    long long max_index = i;
-    if (dataset[(i << 1) + 1] < dataset[max_index]) {
-      max_index = (i << 1) + 1;
+int OperationsInitialization(int operations_number,
+                             std::string (&operations)[kMaxNumber],
+                             int (&dataset)[kMaxNumber]) {
+  std::string operation;
+  int current = 0;
+  for (int i = 0; i < operations_number; ++i) {
+    std::cin >> operation;
+    // Naming all operations for their first letter.
+    operations[i] = operation.substr(0, 1);
+    // If it is "enqueue" operation we need also to read new element.
+    if (operation.substr(0, 1) == "e") {
+      std::cin >> dataset[current++];
     }
-    max_index = CheckChildsMax(i, max_index);
-    max_index = CheckGrandChildsMax(i, max_index, parent, is_grandchild);
-    if (dataset[max_index] > dataset[i]) {
-      swap(dataset[max_index], dataset[i]);
-      if (is_grandchild != 0) {
-        if (dataset[max_index] < dataset[parent]) {
-          swap(dataset[max_index], dataset[parent]);
-        }
-      }
-    } else {
-      break;
-    }
-    i = max_index;
   }
+  return current;
 }
 
-void MinMaxHeap::SiftDown(long long i) {
-  if (NodeLevel(i) % 2 == 0) {
-    SiftDownMin(i);
+void EnqueueOperation(int& right_pointer) {
+  // Adding element to end means that right pointer increases by 1.
+  right_pointer++;
+  std::cout << "ok\n";
+}
+
+void DequeueOperation(int& left_pointer, int& right_pointer,
+                      int (&dataset)[kMaxNumber]) {
+  int queue_size = right_pointer - left_pointer + 1;
+  // Deleting element from the beggining means that left pointer decreases by 1.
+  if (queue_size > 0) {
+    std::cout << dataset[left_pointer++] << "\n";
   } else {
-    SiftDownMax(i);
+    std::cout << "error\n";
   }
 }
 
-void MinMaxHeap::SiftUpMin(long long i) {
-  long long grandparent_index = ((i - 3) >> 2);
-  while (i > 2 && dataset[i] < dataset[grandparent_index]) {
-    swap(dataset[i], dataset[grandparent_index]);
-    i = grandparent_index;
-    grandparent_index = ((i - 3) >> 2);
-  }
-}
-
-void MinMaxHeap::SiftUpMax(long long i) {
-  long long grandparent_index = ((i - 3) >> 2);
-  while (i > 2 && dataset[i] > dataset[grandparent_index]) {
-    swap(dataset[i], dataset[grandparent_index]);
-    i = grandparent_index;
-    grandparent_index = ((i - 3) >> 2);
-  }
-}
-
-void MinMaxHeap::SiftUp(long long i) {
-  if (i == 0) {
-    return;
-  }
-  long long parent_index = ((i - 1) >> 1);
-  if (NodeLevel(i) % 2 == 0) {
-    if (dataset[i] > dataset[parent_index]) {
-      swap(dataset[i], dataset[parent_index]);
-      SiftUpMax(parent_index);
-    } else {
-      SiftUpMin(i);
-    }
-    return;
-  }
-  if (dataset[i] < dataset[parent_index]) {
-    swap(dataset[i], dataset[parent_index]);
-    SiftUpMin(parent_index);
+void FrontOperation(int& left_pointer, int& right_pointer,
+                    int (&dataset)[kMaxNumber]) {
+  int queue_size = right_pointer - left_pointer + 1;
+  // Front element the one with the left pointer.
+  if (queue_size > 0) {
+    std::cout << dataset[left_pointer] << "\n";
   } else {
-    SiftUpMax(i);
+    std::cout << "error\n";
   }
 }
 
-void MinMaxHeap::Insert(long long value) {
-  heap_size++;
-  dataset.push_back(value);
-  cout << "ok\n";
-  SiftUp(heap_size - 1);
+void SizeOperation(int& left_pointer, int& right_pointer) {
+  // Size of the queue is length of segment [left pointer; right pointer].
+  int queue_size = right_pointer - left_pointer + 1;
+  std::cout << queue_size << "\n";
 }
 
-void MinMaxHeap::GetMin() {
-  if (heap_size > 0) {
-    cout << dataset[0] << "\n";
+void ClearOperation(int& left_pointer, int& right_pointer) {
+  std::cout << "ok\n";
+  // Clear operation means left pointer  to queue goes right after the right
+  // one.
+  left_pointer = right_pointer + 1;
+}
+
+void MinOperation(int& left_pointer, int& right_pointer,
+                  int (&sparse_table)[kMaxLevel][kMaxNumber]) {
+  int queue_size = right_pointer - left_pointer + 1;
+  // Proceeding appropriate function for minimum.
+  if (queue_size > 0) {
+    std::cout << Minimum(left_pointer, right_pointer, sparse_table) << "\n";
   } else {
-    cout << "error\n";
+    std::cout << "error\n";
   }
 }
 
-void MinMaxHeap::ExtractMin() {
-  if (heap_size == 0) {
-    cout << "error\n";
-    return;
+void OperationParse(std::string operation, int& left_pointer,
+                    int& right_pointer, int (&dataset)[kMaxNumber],
+                    int (&sparse_table)[kMaxLevel][kMaxNumber]) {
+  // Checking type of operation and proceeding appropriate function.
+  if (operation == "e") {
+    EnqueueOperation(right_pointer);
   }
-  cout << dataset[0] << "\n";
-  if (heap_size == 1) {
-    heap_size = 0;
-    dataset = {};
-    return;
+  if (operation == "d") {
+    DequeueOperation(left_pointer, right_pointer, dataset);
   }
-  swap(dataset[0], dataset[heap_size - 1]);
-  dataset.pop_back();
-  heap_size--;
-  SiftDown(0);
-}
-
-void MinMaxHeap::GetMax() {
-  if (heap_size > 1) {
-    if (heap_size > 2) {
-      cout << max(dataset[1], dataset[2]) << "\n";
-    } else {
-      cout << dataset[1] << "\n";
-    }
-  } else {
-    if (heap_size > 0) {
-      cout << dataset[0] << "\n";
-    } else {
-      cout << "error\n";
-    }
+  if (operation == "f") {
+    FrontOperation(left_pointer, right_pointer, dataset);
   }
-}
-
-void MinMaxHeap::ExtractMax() {
-  if (heap_size == 0) {
-    cout << "error\n";
-    return;
+  if (operation == "s") {
+    SizeOperation(left_pointer, right_pointer);
   }
-  if (heap_size > 1) {
-    if (heap_size > 2) {
-      cout << max(dataset[1], dataset[2]) << "\n";
-      if (dataset[2] > dataset[1]) {
-        swap(dataset[2], dataset[heap_size - 1]);
-        dataset.pop_back();
-        heap_size--;
-        SiftDown(2);
-      } else {
-        swap(dataset[1], dataset[heap_size - 1]);
-        dataset.pop_back();
-        heap_size--;
-        SiftDown(1);
-      }
-    } else {
-      cout << dataset[1] << "\n";
-      dataset.pop_back();
-      heap_size = 1;
-    }
-  } else {
-    cout << dataset[0] << "\n";
-    dataset = {};
-    heap_size = 0;
+  if (operation == "c") {
+    ClearOperation(left_pointer, right_pointer);
   }
-}
-
-void MinMaxHeap::Size() { cout << heap_size << "\n"; }
-
-void MinMaxHeap::Clear() {
-  dataset = {};
-  heap_size = 0;
-  cout << "ok\n";
-}
-
-void ProceedOperation(string operation, MinMaxHeap& heap) {
-  if (operation == "insert") {
-    long long x;
-    cin >> x;
-    heap.Insert(x);
-  }
-  if (operation == "get_min") {
-    heap.GetMin();
-  }
-  if (operation == "extract_min") {
-    heap.ExtractMin();
-  }
-  if (operation == "get_max") {
-    heap.GetMax();
-  }
-  if (operation == "extract_max") {
-    heap.ExtractMax();
-  }
-  if (operation == "size") {
-    heap.Size();
-  }
-  if (operation == "clear") {
-    heap.Clear();
+  if (operation == "m") {
+    MinOperation(left_pointer, right_pointer, sparse_table);
   }
 }
 
 int main() {
-  ios::sync_with_stdio(false);
-  cin.tie(NULL);
-  cout.tie(NULL);
-  long long q;
-  string operation;
-  cin >> q;
-  MinMaxHeap heap = MinMaxHeap();
-  for (long long i = 0; i < q; ++i) {
-    cin >> operation;
-    ProceedOperation(operation, heap);
+  int operations_number;
+  std::cin >> operations_number;
+  int dataset[kMaxNumber];
+  std::string operations[kMaxNumber];
+  int number = OperationsInitialization(operations_number, operations, dataset);
+  int sparse_table[kMaxLevel][kMaxNumber];
+  SparseTableInitialization(number, dataset, sparse_table);
+  int left_pointer = 0, right_pointer = -1;
+  for (int i = 0; i < operations_number; ++i) {
+    OperationParse(operations[i], left_pointer, right_pointer, dataset,
+                   sparse_table);
   }
 }
