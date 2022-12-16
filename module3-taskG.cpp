@@ -18,11 +18,13 @@ class FenwickTree {
  private:
   std::vector<long long> dataset_;
 
- public:
-  std::vector<Point> tree;
-  int tree_size;
+ protected:
   int F(int i) const;
   int G(int i) const;
+
+ public:
+  std::vector<Point> tree;
+  size_t tree_size;
   long long GetPrefixAnswer(int pos) const;
   void Update(int pos, long long val);
   FenwickTree() {
@@ -30,16 +32,16 @@ class FenwickTree {
     tree = {};
     dataset_ = {};
   }
-  FenwickTree(std::vector<Point> data, int data_size) {
-    tree_size = data_size;
+  FenwickTree(std::vector<Point> data) {
+    tree_size = data.size();
     dataset_ = {};
     tree = {};
-    for (int i = 0; i < tree_size; ++i) {
+    for (size_t i = 0; i < tree_size; ++i) {
       dataset_.push_back(0);
       tree.push_back(data[i]);
       tree[i].weight = 0;
     }
-    for (int i = 0; i < tree_size; ++i) {
+    for (size_t i = 0; i < tree_size; ++i) {
       Update(i, data[i].weight);
     }
   }
@@ -60,7 +62,7 @@ long long FenwickTree::GetPrefixAnswer(int pos) const {
 void FenwickTree::Update(int pos, long long val) {
   long long delta = val - dataset_[pos];
   dataset_[pos] = val;
-  for (int i = pos; i < tree_size; i = G(i)) {
+  for (size_t i = pos; i < tree_size; i = G(i)) {
     tree[i].weight += delta;
   }
 }
@@ -92,25 +94,26 @@ class FenwickOfFenwicks : public FenwickTree {
   int tree_of_trees_size_;
 
  public:
-  FenwickOfFenwicks(int n, std::vector<Point> points) {
+  FenwickOfFenwicks(std::vector<Point> points) {
+    size_t n = points.size();
     real_coordinate_x_.resize(n);
     new_index_by_old_x_.resize(n);
     new_index_by_old_y_.resize(n);
     tree_of_trees_size_ = n;
-
+    sort(points.begin(), points.end(), CompX);
     std::vector<Point> temp_l;
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
       real_coordinate_x_[i] = points[i].x;
       points[i].x = i;
       new_index_by_old_x_[points[i].index] = i;
 
       temp_l = {};
-      for (int j = F(i); j <= i; ++j) {
+      for (size_t j = F(i); j <= i; ++j) {
         temp_l.push_back(points[j]);
       }
       sort(temp_l.begin(), temp_l.end(), CompY);
-      tree_of_trees_.push_back(FenwickTree(temp_l, (int)temp_l.size()));
-      for (int j = 0; j < (int)temp_l.size(); ++j) {
+      tree_of_trees_.push_back(FenwickTree(temp_l));
+      for (size_t j = 0; j < temp_l.size(); ++j) {
         new_index_by_old_y_[temp_l[j].index].push_back(j);
       }
     }
@@ -183,8 +186,7 @@ int main() {
     std::cin >> x >> y >> w;
     points.push_back(Point(x, y, w, i));
   }
-  sort(points.begin(), points.end(), CompX);
-  FenwickOfFenwicks tree_of_trees = FenwickOfFenwicks(n, points);
+  FenwickOfFenwicks tree_of_trees = FenwickOfFenwicks(points);
   int m;
   std::cin >> m;
   for (int _ = 0; _ < m; ++_) {
