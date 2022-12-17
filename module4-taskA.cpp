@@ -4,13 +4,8 @@
 #include <vector>
 
 class HashTable {
- private:
-  int a_, b_, mod_;
-  std::vector<std::list<int>> hash_table_;
-  int Hash(int value) { return (a_ * value + b_) % mod_; }
-
  public:
-  HashTable(int a = 77, int b = 111, int mod = 100500) {
+  explicit HashTable(int a = 77, int b = 111, int mod = 100500) {
     a_ = a;
     b_ = b;
     mod_ = mod;
@@ -18,12 +13,17 @@ class HashTable {
       hash_table_.push_back({});
     }
   }
-  bool Find(int element);
+  bool Find(int element) const;
   void Insert(int element);
   void Erase(int element);
+
+ private:
+  int a_, b_, mod_;
+  std::vector<std::list<int>> hash_table_;
+  int Hash(int value) const { return (a_ * value + b_) % mod_; }
 };
 
-bool HashTable::Find(int element) {
+bool HashTable::Find(int element) const {
   int index = Hash(element);
   for (auto v : hash_table_[index]) {
     if (v == element) {
