@@ -9,121 +9,133 @@ struct Node {
   Node() : key(0), h(0), l(nullptr), r(nullptr) {}
   Node(long long k) : key(k), h(1), l(nullptr), r(nullptr) {}
 };
+class AVL {
+ public:
+  AVL() : root_(nullptr) {}
+  AVL(Node* t) : root_(t) {}
+  Node* Insert(long long x);
+  bool Find(long long x) const;
+  long long Next(long long x) const;
+  void Delete();
 
-size_t Depth(Node* t) {
-  if (t == nullptr) {
-    return 0;
+ private:
+  Node* root_;
+  size_t Depth() const;
+  int DepthDiffer() const;
+  size_t UpdateDepth();
+  Node* LeftRotate();
+  Node* RightRotate();
+  void BigLeftRotate();
+  void BigRightRotate();
+  void FixAVL();
+};
+Node* AVL::Insert(long long x) {
+  if (root_ == nullptr) {
+    return new Node(x);
   }
-  return t->h;
-}
-
-int DepthDiffer(Node* t) {
-  if (t == nullptr) {
-    return 0;
-  }
-  return Depth(t->r) - Depth(t->l);
-}
-
-void UpdateDepth(Node* t) { t->h = std::max(Depth(t->l), Depth(t->r)) + 1; }
-
-void LeftRotate(Node*& t) {
-  Node* temp = t->r;
-  t->r = temp->l;
-  temp->l = t;
-  UpdateDepth(t);
-  UpdateDepth(temp);
-  t = temp;
-}
-
-void RightRotate(Node*& t) {
-  Node* temp = t->l;
-  t->l = temp->r;
-  temp->r = t;
-  UpdateDepth(t);
-  UpdateDepth(temp);
-  t = temp;
-}
-
-void BigLeftRotate(Node*& t) {
-  LeftRotate(t->l);
-  RightRotate(t);
-}
-
-void BigRightRotate(Node*& t) {
-  RightRotate(t->r);
-  LeftRotate(t);
-}
-
-void FixAVL(Node*& t) {
-  UpdateDepth(t);
-  if (DepthDiffer(t) == -2) {
-    if (DepthDiffer(t->l) == 1) {
-      BigLeftRotate(t);
-    } else {
-      RightRotate(t);
-    }
-  }
-  if (DepthDiffer(t) == 2) {
-    if (DepthDiffer(t->r) == -1) {
-      BigRightRotate(t);
-    } else {
-      LeftRotate(t);
-    }
-  }
-}
-
-void Insert(Node*& t, long long x) {
-  if (t == nullptr) {
-    t = new Node(x);
-    return;
-  }
-  if (x <= t->key) {
-    Insert(t->l, x);
+  if (x <= root_->key) {
+    root_->l = AVL(root_->l).Insert(x);
   } else {
-    Insert(t->r, x);
+    root_->r = AVL(root_->r).Insert(x);
   }
-  FixAVL(t);
+  FixAVL();
+  return root_;
 }
-
-bool Find(Node* t, long long x) {
-  if (t == nullptr) {
+bool AVL::Find(long long x) const {
+  if (root_ == nullptr) {
     return false;
   }
-  if (x == t->key) {
+  if (x == root_->key) {
     return true;
   }
-  if (x > t->key) {
-    return Find(t->r, x);
+  if (x > root_->key) {
+    return AVL(root_->r).Find(x);
   }
-  return Find(t->l, x);
+  return AVL(root_->l).Find(x);
 }
-
-long long Next(Node* t, long long x) {
-  if (t == nullptr) {
+long long AVL::Next(long long x) const {
+  if (root_ == nullptr) {
     return kInf;
   }
-  if (x == t->key) {
-    return t->key;
+  if (x == root_->key) {
+    return root_->key;
   }
-  if (x > t->key) {
-    return Next(t->r, x);
+  if (x > root_->key) {
+    return AVL(root_->r).Next(x);
   }
-  return std::min(Next(t->l, x), t->key);
+  return std::min(AVL(root_->l).Next(x), root_->key);
 }
-
-void Delete(Node* t) {
-  if (t == nullptr) {
+void AVL::Delete() {
+  if (root_ == nullptr) {
     return;
   }
-  Delete(t->l);
-  Delete(t->r);
-  delete t;
+  AVL(root_->l).Delete();
+  AVL(root_->r).Delete();
+  delete root_;
+}
+size_t AVL::Depth() const {
+  if (root_ == nullptr) {
+    return 0;
+  }
+  return root_->h;
+}
+int AVL::DepthDiffer() const {
+  if (root_ == nullptr) {
+    return 0;
+  }
+  return AVL(root_->r).Depth() - AVL(root_->l).Depth();
+}
+size_t AVL::UpdateDepth() {
+  return std::max(AVL(root_->l).Depth(), AVL(root_->r).Depth()) + 1;
+}
+Node* AVL::LeftRotate() {
+  Node* temp = root_->r;
+  root_->r = temp->l;
+  temp->l = root_;
+  root_->h = UpdateDepth();
+  temp->h = AVL(temp).UpdateDepth();
+  root_ = temp;
+  return root_;
+}
+Node* AVL::RightRotate() {
+  Node* temp = root_->l;
+  root_->l = temp->r;
+  temp->r = root_;
+  root_->h = UpdateDepth();
+  temp->h = AVL(temp).UpdateDepth();
+  root_ = temp;
+  return root_;
+}
+void AVL::BigLeftRotate() {
+  root_->l = AVL(root_->l).LeftRotate();
+  root_ = RightRotate();
+}
+void AVL::BigRightRotate() {
+  root_->r = AVL(root_->r).RightRotate();
+  root_ = LeftRotate();
+}
+void AVL::FixAVL() {
+  root_->h = UpdateDepth();
+  if (DepthDiffer() == -2) {
+    if (AVL(root_->l).DepthDiffer() == 1) {
+      BigLeftRotate();
+    } else {
+      root_ = RightRotate();
+    }
+  }
+  if (DepthDiffer() == 2) {
+    if (AVL(root_->r).DepthDiffer() == -1) {
+      BigRightRotate();
+    } else {
+      root_ = LeftRotate();
+    }
+  }
 }
 
 int main() {
   size_t n;
   std::cin >> n;
-  Node* t = nullptr;
+  AVL tree;
   long long y = 0;
   long long mod = 1e9;
   for (size_t i = 0; i < n; ++i) {
@@ -133,19 +145,19 @@ int main() {
       long long x;
       std::cin >> x;
       x = (x + y + mod) % mod;
-      if (!Find(t, x)) {
-        Insert(t, x);
+      if (!tree.Find(x)) {
+        tree = tree.Insert(x);
       }
       y = 0;
     } else {
       long long x;
       std::cin >> x;
-      y = Next(t, x);
+      y = tree.Next(x);
       if (y == kInf) {
         y = -1;
       }
       std::cout << y << "\n";
     }
   }
-  Delete(t);
+  tree.Delete();
 }
