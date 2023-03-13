@@ -9,16 +9,12 @@
 #include <iostream>
 #include <vector>
 
-int main() {
-  int n, k;
-  std::cin >> n >> k;
+int CountMinNumberOfExperements(int n, int k) {
   if (n == 1) {
-    std::cout << 0;
     return 0;
   }
   if (k == 0) {
-    std::cout << -1;
-    return 0;
+    return -1;
   }
   std::vector<std::vector<int>> dp(
       k + 1, {0});  // dp[i][j]- max height i-planes j-attempts
@@ -29,8 +25,15 @@ int main() {
                       1);  // plane saved or not saved
     }
     if (dp[k][j] >= (n - 1)) {
-      std::cout << j;
+      return j;
       break;
     }
   }
+  return 0;
+}
+
+int main() {
+  int n, k;
+  std::cin >> n >> k;
+  std::cout << CountMinNumberOfExperements(n, k);
 }
