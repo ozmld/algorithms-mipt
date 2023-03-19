@@ -10,11 +10,7 @@
 #include <string>
 #include <vector>
 
-int main () {
-  std::string s1, s2;
-  std::cin >> s1 >> s2;
-  int k;
-  std::cin >> k;
+int MinNumberOfIndexes(std::string s1, std::string s2, int k) {
   std::vector<std::vector<std::vector<int>>> dp(s2.size() + 1, std::vector<std::vector<int>>(k + 1, std::vector<int>(k + 1, 0)));
   for (uint64_t i = 1; i < s2.size() + 1; ++i) {
     for (int add = 0; add <= k; ++add) {
@@ -26,7 +22,7 @@ int main () {
           dp[i][add][del] = std::max(dp[i][add][del], dp[i][add][del - 1]);
         }
         if (0 < (i - add + del) && s1.size() >= (i + del - add)) {
-          dp[i][add][del] = std::max(dp[i][add][del], dp[i - 1][add][del] + (int)(s1[i - add + del - 1] == s2[i - 1]));
+          dp[i][add][del] = std::max(dp[i][add][del], dp[i - 1][add][del] + static_cast<int>((s1[i - add + del - 1] == s2[i - 1])));
         }
       }
     }
@@ -43,13 +39,19 @@ int main () {
       ans = std::max(ans, dp[s2.size()][add][del] + k - add - del);
     }
   }
-  if (std::abs((int)s1.size() - (int)s2.size()) > k) {
-    std::cout << -1;
-  } else {
-    if (((int)s2.size() - ans) < 0) {
-      std::cout << 0;
-    } else {
-      std::cout << (int)s2.size() - ans;
-    }
+  if (std::abs(static_cast<int>(s1.size()) - static_cast<int>(s2.size())) > k) {
+    return -1;
   }
+  if ((static_cast<int>(s2.size()) - ans) < 0) {
+    return 0;
+  }
+  return static_cast<int>(s2.size()) - ans;
+}
+
+int main () {
+  std::string s1, s2;
+  std::cin >> s1 >> s2;
+  int k;
+  std::cin >> k;
+  std::cout <<  MinNumberOfIndexes(s1, s2, k);
 }
