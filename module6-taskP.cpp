@@ -62,7 +62,7 @@ long long ConstructMask(long long mask, int n, int first_bit) {
   return prevmask;
 }
 
-int Parser(char c) {
+int Parse(char c) {
   if (c == '+') {
     return 1;
   }
@@ -74,17 +74,8 @@ int Parser(char c) {
   }
   return 0;
 }
-int main() {
-  long long n, m;
-  std::cin >> n >> m;
-  std::vector<std::vector<long long>> data(n, std::vector<long long>(m, 0));
-  for (int i = 0; i < n; ++i) {
-    for (int j = 0; j < m; ++j) {
-      char c;
-      std::cin >> c;
-      data[i][j] = Parser(c);
-    }
-  }
+int NumberOfDifferentInvasions(int n, int m,
+                               std::vector<std::vector<long long>>& data) {
   if (n == 1) {
     long long counter = 0;
     for (int i = 0; i < m; ++i) {
@@ -92,8 +83,7 @@ int main() {
         ++counter;
       }
     }
-    std::cout << (1 << counter) % kMod;
-    return 0;
+    return (1 << counter) % kMod;
   }
   std::vector<std::vector<long long>> dp(m, std::vector<long long>(1 << n, 0));
   for (long long mask = 0; mask < (1 << n); ++mask) {
@@ -119,10 +109,23 @@ int main() {
       dp[i][mask] %= kMod;
     }
   }
-  long long ans = 0;
+  long long number_of_different_invasions = 0;
   for (long long mask = 0; mask < (1 << n); ++mask) {
-    ans += dp[m - 1][mask];
-    ans %= kMod;
+    number_of_different_invasions += dp[m - 1][mask];
+    number_of_different_invasions %= kMod;
   }
-  std::cout << ans;
+  return number_of_different_invasions;
+}
+int main() {
+  long long n, m;
+  std::cin >> n >> m;
+  std::vector<std::vector<long long>> data(n, std::vector<long long>(m, 0));
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < m; ++j) {
+      char c;
+      std::cin >> c;
+      data[i][j] = Parse(c);
+    }
+  }
+  std::cout << NumberOfDifferentInvasions(n, m, data);
 }
