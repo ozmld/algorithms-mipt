@@ -12,6 +12,7 @@
 
 int MinNumberOfIndexes(std::string s1, std::string s2, int k) {
   std::vector<std::vector<std::vector<int>>> dp(s2.size() + 1, std::vector<std::vector<int>>(k + 1, std::vector<int>(k + 1, 0)));
+  // dp[i][add][[del] - number of indexes j that s2[j] == (string with len i made by s1 by add additions and del delitions)[j]
   for (uint64_t i = 1; i < s2.size() + 1; ++i) {
     for (int add = 0; add <= k; ++add) {
       for (int del = 0; del <= k; ++del) {
