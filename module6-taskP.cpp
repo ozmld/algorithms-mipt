@@ -86,6 +86,11 @@ int NumberOfDifferentInvasions(int n, int m,
     return (1 << counter) % kMod;
   }
   std::vector<std::vector<long long>> dp(m, std::vector<long long>(1 << n, 0));
+  // dp[i][mask] - number of different invasions if we use first i columns
+  // and mask of column i is mask. To update dp[i][mask] we construct mask of
+  // previous column and check possibility of it and if mask is possible
+  // we add to current number of different invasions number of invasions
+  // when we use i-1 columns and mask of column i-1 is constructed mask
   for (long long mask = 0; mask < (1 << n); ++mask) {
     if (!Check(mask, data, 0)) {
       dp[0][mask] = 0;
