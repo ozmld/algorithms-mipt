@@ -58,7 +58,7 @@ int main() {
     numbers.push_back(x);
   }
   std::vector<int> indexes_of_longest_subsequence =
-     FindLongestNotIncreasingSubsequence(n, numbers);
+      FindLongestNotIncreasingSubsequence(n, numbers);
   std::cout << indexes_of_longest_subsequence.size() << "\n";
   for (size_t i = 0; i < indexes_of_longest_subsequence.size(); ++i) {
     std::cout << indexes_of_longest_subsequence[i] << " ";
