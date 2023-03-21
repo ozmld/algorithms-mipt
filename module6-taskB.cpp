@@ -20,16 +20,8 @@ int FindMaxPos(std::vector<long long>& numbers, long long pivot) {
   return r;
 }
 
-int main() {
-  // dp[i] - min a[k] - exists a[t1] < a[t2] < ... < a[ti] : ti = k;
-  int n;
-  std::cin >> n;
-  std::vector<int> numbers;
-  for (int i = 0; i < n; ++i) {
-    int x;
-    std::cin >> x;
-    numbers.push_back(x);
-  }
+std::vector<int> FindLongestNotIncreasingSubsequence(int n,
+                                                     std::vector<int> numbers) {
   std::vector<long long> dp(n + 1, -kInf), pos(n + 1, -1), prev(n, -1);
   dp[0] = kInf;
   for (int i = 0; i < n; ++i) {
@@ -45,15 +37,30 @@ int main() {
       break;
     }
   }
-  int qq = pos[max_len];
-  std::vector<int> ans;
-  while (qq != -1) {
-    ans.push_back(qq + 1);
-    qq = prev[qq];
+  int current_index = pos[max_len];
+  std::vector<int> indexes_of_longest_subsequence;
+  while (current_index != -1) {
+    indexes_of_longest_subsequence.push_back(current_index + 1);
+    current_index = prev[current_index];
   }
-  std::reverse(ans.begin(), ans.end());
-  std::cout << max_len << "\n";
-  for (int i = 0; i < max_len; ++i) {
-    std::cout << ans[i] << " ";
+  std::reverse(indexes_of_longest_subsequence.begin(),
+               indexes_of_longest_subsequence.end());
+  return indexes_of_longest_subsequence;
+}
+int main() {
+  // dp[i] - min a[k] - exists a[t1] < a[t2] < ... < a[ti] : ti = k;
+  int n;
+  std::cin >> n;
+  std::vector<int> numbers;
+  for (int i = 0; i < n; ++i) {
+    int x;
+    std::cin >> x;
+    numbers.push_back(x);
+  }
+  std::vector<int> indexes_of_longest_subsequence =
+     FindLongestNotIncreasingSubsequence(n, numbers);
+  std::cout << indexes_of_longest_subsequence.size() << "\n";
+  for (size_t i = 0; i < indexes_of_longest_subsequence.size(); ++i) {
+    std::cout << indexes_of_longest_subsequence[i] << " ";
   }
 }
