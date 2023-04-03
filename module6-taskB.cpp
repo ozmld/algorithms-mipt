@@ -7,25 +7,14 @@
 
 const long long kInf = 1e10;
 
-int FindMaxPos(std::vector<long long>& numbers, long long pivot) {
-  int l = 0, r = numbers.size();
-  while ((r - l) > 1) {
-    int m = (l + r) / 2;
-    if (numbers[m] < pivot) {
-      r = m;
-    } else {
-      l = m;
-    }
-  }
-  return r;
-}
-
 std::vector<int> FindLongestNotIncreasingSubsequence(int n,
                                                      std::vector<int> numbers) {
   std::vector<long long> dp(n + 1, -kInf), pos(n + 1, -1), prev(n, -1);
   dp[0] = kInf;
   for (int i = 0; i < n; ++i) {
-    int p = FindMaxPos(dp, numbers[i]);
+    int p = std::distance(dp.begin(),
+                          std::upper_bound(dp.begin(), dp.end(), numbers[i],
+                                           std::greater<long long>()));
     dp[p] = numbers[i];
     pos[p] = i;
     prev[i] = pos[p - 1];
