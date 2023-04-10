@@ -7,8 +7,8 @@
 
 class Graph {
  public:
-  Graph() : graph_({}) {}
-  Graph(size_t vertex_number) : graph_(vertex_number) {}
+  explicit Graph() : graph_({}) {}
+  explicit Graph(size_t vertex_number) : graph_(vertex_number) {}
   size_t GetVertexNumber() const { return graph_.size(); }
   void AddEdge(size_t v, size_t u) { graph_[v].push_back(u); }
   std::vector<size_t> GetAdjacentVertices(size_t v) const { return graph_[v]; }
