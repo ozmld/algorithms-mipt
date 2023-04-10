@@ -26,7 +26,7 @@ class Graph {
   std::vector<std::vector<size_t>> graph_;
 };
 
-void SortByOutTime(Graph& g, size_t v, std::vector<size_t>& used,
+void SortByOutTime(const Graph& g, size_t v, std::vector<size_t>& used,
                    std::vector<size_t>& out_order) {
   used[v] = 1;
   for (size_t u : g.GetAdjacentVertices(v)) {
@@ -48,11 +48,17 @@ void FillSameComponent(const Graph& g, size_t v, std::vector<size_t>& used,
   }
 }
 
-std::pair<std::vector<size_t>, size_t> FindComponents(
-    const Graph& graph, const std::vector<size_t>& out_order) {
+std::pair<std::vector<size_t>, size_t> FindComponents(const Graph& graph) {
+  size_t vertex_num = graph.GetVertexNumber();
+  std::vector<size_t> used(vertex_num, 0), out_order;
+  for (size_t v = 0; v < vertex_num; ++v) {
+    if (used[v] == 0) {
+      SortByOutTime(graph, v, used, out_order);
+    }
+  }
   Graph revered_graph = graph.GetReversed();
-  size_t vertex_num = revered_graph.GetVertexNumber();
-  std::vector<size_t> used(vertex_num, 0), component(vertex_num, 0);
+  used.assign(vertex_num, 0);
+  std::vector<size_t> component(vertex_num, 0);
   size_t component_num = 1;
   for (size_t i = 0; i < vertex_num; ++i) {
     size_t v = out_order[vertex_num - 1 - i];
@@ -72,16 +78,9 @@ int main() {
     std::cin >> v >> u;
     graph.AddEdge(--v, --u);
   }
-  std::vector<size_t> used(n, 0), out_order;
-  for (size_t v = 0; v < n; ++v) {
-    if (used[v] == 0) {
-      SortByOutTime(graph, v, used, out_order);
-    }
-  }
   std::vector<size_t> component;
   size_t component_num = 1;
-  std::pair<std::vector<size_t>, size_t> component_info =
-      FindComponents(graph, out_order);
+  std::pair<std::vector<size_t>, size_t> component_info = FindComponents(graph);
   component = component_info.first;
   component_num = component_info.second;
   std::cout << component_num - 1 << "\n";
