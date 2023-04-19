@@ -19,11 +19,11 @@ class Graph {
  public:
   Graph() : graph_({}) {}
   Graph(size_t vertex_number) : graph_(vertex_number) {}
-  size_t GetVertexNumber() { return graph_.size(); }
+  size_t GetVertexNumber() const { return graph_.size(); }
   void AddEdge(size_t from, size_t to, int weight) {
     graph_[from].push_back(Edge(to, weight));
   }
-  std::vector<Edge> GetAdjacentVertices(size_t vertex) {
+  std::vector<Edge> GetAdjacentVertices(size_t vertex) const {
     return graph_[vertex];
   }
 
