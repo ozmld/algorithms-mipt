@@ -17,8 +17,7 @@ struct Edge {
 
 class Graph {
  public:
-  Graph() : graph_({}) {}
-  Graph(size_t vertex_number) : graph_(vertex_number) {}
+  explicit Graph(size_t vertex_number) : graph_(vertex_number) {}
   size_t GetVertexNumber() const { return graph_.size(); }
   void AddEdge(size_t from, size_t to, int weight) {
     graph_[from].push_back(Edge(to, weight));
@@ -31,7 +30,7 @@ class Graph {
   std::vector<std::vector<Edge>> graph_;
 };
 
-std::vector<int> SearchShortestPaths(Graph& graph, size_t start) {
+std::vector<int> SearchShortestPaths(const Graph& graph, size_t start) {
   std::vector<int> dist(graph.GetVertexNumber(), kInf);
   std::vector<int> is_visited(graph.GetVertexNumber(), 0);
   dist[start] = 0;
@@ -53,7 +52,7 @@ std::vector<int> SearchShortestPaths(Graph& graph, size_t start) {
       int weight = edge.weight;
       if (dist[to] > dist[vertex] + weight) {
         dist[to] = dist[vertex] + weight;
-        heap.push({-1 * dist[to], to});
+        heap.push({-1 * dist[to], to});  // -1 here to reverse sorting order
       }
     }
   }
@@ -67,7 +66,7 @@ int main() {
     int vertex_number;
     int edge_number;
     std::cin >> vertex_number >> edge_number;
-    Graph graph = Graph(vertex_number);
+    Graph graph(vertex_number);
     for (int i = 0; i < edge_number; ++i) {
       int from;
       int to;
