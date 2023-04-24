@@ -9,14 +9,12 @@ const int kMaxWeigt = 100000;
 struct Edge {
   size_t to;
   long long weight;
-  Edge() {}
   Edge(size_t to, long long weight) : to(to), weight(weight) {}
 };
 
 class Graph {
  public:
-  Graph() : graph_({}) {}
-  Graph(size_t vertex_number) : graph_(vertex_number) {}
+  explicit Graph(size_t vertex_number) : graph_(vertex_number) {}
   size_t GetVertexNumber() const { return graph_.size(); }
   void AddEdge(size_t from, size_t to, long long weight) {
     graph_[from].push_back(Edge(to, weight));
@@ -33,9 +31,9 @@ std::vector<Edge> edges;
 
 std::vector<size_t> FindNegativeCycle(const Graph& graph) {
   size_t vertex_num = graph.GetVertexNumber();
-  std::vector<long long> dp(vertex_num, kInf);
+  std::vector<long long> distance(vertex_num, kInf);
   std::vector<long long> parent(vertex_num, -1);
-  dp[0] = 0;
+  distance[0] = 0;
   size_t start = vertex_num;
   for (size_t _ = 0; _ <= vertex_num; ++_) {
     start = vertex_num;
@@ -43,12 +41,12 @@ std::vector<size_t> FindNegativeCycle(const Graph& graph) {
       for (Edge edge : graph.GetAdjacentVertices(from)) {
         size_t to = edge.to;
         int weight = edge.weight;
-        if (dp[from] == kInf) {
+        if (distance[from] == kInf) {
           continue;
         }
-        if ((dp[from] + weight) < dp[to]) {
+        if ((distance[from] + weight) < distance[to]) {
           start = to;
-          dp[to] = dp[from] + weight;
+          distance[to] = distance[from] + weight;
           parent[to] = from;
         }
       }
