@@ -7,7 +7,6 @@
 struct Edge {
   size_t to;
   long long weight;
-  Edge() {}
   Edge(size_t to, long long weight) : to(to), weight(weight) {}
   bool operator == (const Edge& other) {
     return to == other.to && weight == other.weight;
@@ -16,8 +15,7 @@ struct Edge {
 
 class Graph {
  public:
-  Graph() : graph_({}) {}
-  Graph(size_t vertex_number) : graph_(vertex_number) {}
+  explicit Graph(size_t vertex_number) : graph_(vertex_number) {}
   size_t GetVertexNumber() const { return graph_.size(); }
   void AddEdge(size_t from, size_t to, long long weight) {
     graph_[from].push_back(Edge(to, weight));
