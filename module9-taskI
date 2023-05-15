@@ -1,0 +1,121 @@
+// найти минимальное контролирующее множество
+
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+struct Edge {
+  size_t to;
+  long long weight;
+  Edge() {}
+  Edge(size_t to, long long weight) : to(to), weight(weight) {}
+  bool operator == (const Edge& other) {
+    return to == other.to && weight == other.weight;
+  }
+};
+
+class Graph {
+ public:
+  Graph() : graph_({}) {}
+  Graph(size_t vertex_number) : graph_(vertex_number) {}
+  size_t GetVertexNumber() const { return graph_.size(); }
+  void AddEdge(size_t from, size_t to, long long weight) {
+    graph_[from].push_back(Edge(to, weight));
+  }
+  std::vector<Edge> GetAdjacentVertices(size_t vertex) const {
+    return graph_[vertex];
+  }
+  void ReverseEdge(size_t from, size_t to, long long weight) {
+    Edge e(to, weight);
+    for(std::vector<Edge>::iterator iter = graph_[from].begin(); iter != graph_[from].end(); ++iter) {
+      if(*iter == e) {
+        graph_[from].erase( iter );
+        break;
+      }
+    }
+    graph_[to].push_back(Edge(from, weight));
+  }
+ private:
+  std::vector<std::vector<Edge>> graph_;
+};
+
+
+void Dfs(const Graph& graph, size_t v, std::vector<size_t>& used) {
+  used[v] = 1;
+  for (Edge edge: graph.GetAdjacentVertices(v)) {
+    size_t to = edge.to;
+    if (used[to] != 1) {
+      Dfs(graph, to, used);
+    }
+  }
+}
+
+std::pair<std::vector<size_t>, std::vector<size_t>> GetMinControlSet(Graph graph, const std::vector<Edge>& matching) {
+  for (size_t from = 0; from < matching.size(); ++from) {
+    size_t to = matching[from].to;
+    long long weight = matching[from].weight;
+    if (weight == 1) {
+      graph.ReverseEdge(from, to, weight);
+    }
+  }
+  std::vector<size_t> used(graph.GetVertexNumber(), 0);
+  for (size_t v = 0; v < matching.size(); ++v) {
+    if (used[v] == 0 && matching[v].weight == 0) {
+      Dfs(graph, v, used);
+    }
+  }
+  std::vector<size_t> left_control_set;
+  for (size_t v = 0; v < matching.size(); ++v) {
+    if (used[v] == 0) {
+      left_control_set.push_back(v + 1);
+    }
+  }
+  std::vector<size_t> right_control_set;
+  for (size_t v = matching.size(); v < graph.GetVertexNumber(); ++v) {
+    if (used[v] != 0) {
+      right_control_set.push_back(v + 1 - matching.size());
+    }
+  }
+  return {left_control_set, right_control_set};
+}
+
+int main() {
+  size_t m, n;
+  std::cin >> m >> n;
+  Graph graph(m + n);
+  for (size_t i = 0; i < m; ++i) {
+    size_t k;
+    std::cin >> k;
+    for (size_t j = 0; j < k; ++j) {
+      size_t to;
+      std::cin >> to;
+      --to;
+      graph.AddEdge(i, m + to, 1);
+    }
+  }
+  std::vector<Edge> matching;
+  for (size_t i = 0; i < m; ++i) {
+    size_t l;
+    std::cin >> l;
+    if (l == 0) {
+      matching.push_back(Edge(m + l, 0));
+      continue;
+    }
+    --l;
+    matching.push_back(Edge(m + l, 1));
+  }
+  std::pair<std::vector<size_t>, std::vector<size_t>> min_control_set;
+  min_control_set = GetMinControlSet(graph, matching);
+  std::vector<size_t> left_control_set = min_control_set.first;
+  std::vector<size_t> right_control_set = min_control_set.second;
+  std::cout << left_control_set.size() + right_control_set.size() << "\n";
+  std::cout << left_control_set.size() << " ";
+  for (size_t v: left_control_set) {
+    std::cout << v << " ";
+  }
+  std::cout << "\n";
+  std::cout << right_control_set.size() << " ";
+  for (size_t v: right_control_set) {
+    std::cout << v << " ";
+  }
+}
