@@ -1,0 +1,75 @@
+// найти минимальный остов
+
+#include <iostream>
+#include <queue>
+#include <vector>
+
+const int kInf = 1e9;
+
+struct Edge {
+  size_t to;
+  size_t weight;
+  Edge(size_t to, size_t weight) : to(to), weight(weight) {}
+};
+
+class Graph {
+ public:
+  explicit Graph(size_t vertex_number) : graph_(vertex_number) {}
+  size_t GetVertexNumber() const { return graph_.size(); }
+  void AddEdge(size_t from, size_t to, size_t weight) {
+    graph_[from].push_back(Edge(to, weight));
+  }
+  std::vector<Edge> GetAdjacentVertices(size_t vertex) const {
+    return graph_[vertex];
+  }
+
+ private:
+  std::vector<std::vector<Edge>> graph_;
+};
+
+size_t SearchMSTValue(const Graph& graph, size_t start) {
+  std::vector<size_t> dist(graph.GetVertexNumber(), kInf);
+  std::vector<size_t> is_visited(graph.GetVertexNumber(), 0);
+  dist[start] = 0;
+  std::priority_queue<std::pair<int, size_t>> heap;
+  heap.push({0, start} );
+  size_t mst_value = 0;
+  while (!heap.empty()) {
+    size_t vertex = heap.top().second;
+    size_t weight = std::abs(heap.top().first);
+    heap.pop();
+    while (!heap.empty() && is_visited[vertex] == 1) {
+      vertex = heap.top().second;
+      weight = std::abs(heap.top().first);
+
+      heap.pop();
+    }
+    if (heap.empty() && is_visited[vertex] == 1) {
+      break;
+    }
+    mst_value += weight;
+    is_visited[vertex] = 1;
+    for (Edge edge : graph.GetAdjacentVertices(vertex)) {
+      size_t to = edge.to;
+      size_t weight = edge.weight;
+      heap.push({-1 * weight, to});  // -1 here to reverse sorting order
+    }
+  }
+  return mst_value;
+}
+
+int main() {
+  size_t n, m;
+  std::cin >> n >> m;
+  Graph graph(n);
+
+  for (size_t i = 0; i < m; ++i) {
+    size_t from, to, weight;
+    std::cin >> from >> to >> weight;
+    graph.AddEdge(--from, --to, weight);
+    graph.AddEdge(to, from, weight);
+
+  }
+  size_t mst_value = SearchMSTValue(graph, 0);
+  std::cout << mst_value;
+}
